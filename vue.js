@@ -1,13 +1,14 @@
 const app = Vue.createApp({
   data() {
       return {
+          originalProducts: [], // Guarda la lista completa de productos
           products: [],
           categories: [],
           categoryImages: [
               { category: 'electronics', image: 'images/electronicacategoria.png' },
               { category: 'jewelery', image: 'images/joyeriacategoria.png' },
-              { category: "men's clothing", image: 'images/hombrecategoria.png' },
-              { category: "women's clothing", image: 'images/mujercategoria.png' },
+              { category: "men\'s clothing", image: 'images/hombrecategoria.png' },
+              { category: "women\'s clothing", image: 'images/mujercategoria.png' },
           ],
           selectedCategory: null,
           selectedProduct: null,
@@ -28,6 +29,7 @@ const app = Vue.createApp({
           fetch('https://fakestoreapi.com/products')
               .then(response => response.json())
               .then(data => {
+                  this.originalProducts = data; // Guarda la lista completa de productos
                   this.products = data;
               })
               .catch(error => {
@@ -45,11 +47,17 @@ const app = Vue.createApp({
               });
       },
       selectCategory(category) {
-        this.selectedCategory = category;
-        this.filterProductsByCategory(category);
-    },
+          this.selectedCategory = category;
+          this.filterProductsByCategory(category);
+      },
+      filterProductsByCategory(category) {
+          // Filtra la lista completa de productos por categoría
+          this.products = this.originalProducts.filter(product => product.category === category);
+          this.sortProducts(this.sortBy); // Vuelve a aplicar el orden después del filtrado
+      },
       filterByCategory(category) {
           this.selectedCategory = category;
+          this.filterProductsByCategory(category);
       },
       showDetail(product) {
           this.selectedProduct = product;
@@ -126,8 +134,8 @@ const app = Vue.createApp({
       sortProducts(criteria) {
           this.sortBy = criteria;
           const categoryProducts = this.selectedCategory
-              ? this.products.filter(product => product.category === this.selectedCategory)
-              : this.products;
+              ? this.originalProducts.filter(product => product.category === this.selectedCategory)
+              : this.originalProducts;
 
           if (criteria === 'price') {
               categoryProducts.sort((a, b) => a.price - b.price);
@@ -139,7 +147,6 @@ const app = Vue.createApp({
               categoryProducts.sort((a, b) => b.title.localeCompare(a.title));
           }
 
-          // Actualizar la lista de productos con el orden aplicado
           this.products = categoryProducts;
       },
   },
